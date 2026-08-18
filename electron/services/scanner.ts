@@ -21,9 +21,21 @@ const IGNORED_FOLDERS = new Set([
 ])
 
 export async function scanDirectory(
-  rootPath: string,
+  rawPath: string,
   options: Partial<ScanFilterOptions> = {}
 ): Promise<ScanResult> {
+  let rootPath = path.resolve(rawPath)
+
+  try {
+    const rootStat = await fs.stat(rootPath)
+    if (!rootStat.isDirectory()) {
+      // If a file was selected or dropped instead of a directory, sweep its parent folder
+      rootPath = path.dirname(rootPath)
+    }
+  } catch (err) {
+    console.error('Failed to stat rootPath:', rootPath, err)
+  }
+
   const recursive = options.recursive ?? true
   const includeHidden = options.includeHidden ?? false
   const minSizeBytes = options.minSizeBytes ?? 0
@@ -48,7 +60,8 @@ export async function scanDirectory(
     let entries
     try {
       entries = await fs.readdir(currentDir, { withFileTypes: true })
-    } catch {
+    } catch (err) {
+      console.warn(`Could not read dir ${currentDir}:`, err)
       return
     }
 
@@ -115,8 +128,8 @@ export async function scanDirectory(
           files.push(fileItem)
           totalBytes += sizeBytes
           categoryCounts[category] = (categoryCounts[category] || 0) + 1
-        } catch {
-          // File might be locked or inaccessible; ignore
+        } catch (fileErr) {
+          console.warn(`Could not stat file ${fullPath}:`, fileErr)
         }
       }
     }

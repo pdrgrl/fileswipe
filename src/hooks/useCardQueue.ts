@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { FileItem, ActionHistoryItem, StorageStats } from '../types'
 
 interface UseCardQueueProps {
@@ -23,6 +23,13 @@ export function useCardQueue({
   const [queue, setQueue] = useState<FileItem[]>(initialFiles)
   const [history, setHistory] = useState<ActionHistoryItem[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // Sync queue and clear history when a new folder or file list is loaded
+  useEffect(() => {
+    setQueue(initialFiles)
+    setHistory([])
+    setErrorMessage(null)
+  }, [initialFiles, folderPath])
 
   const initialTotalBytes = useMemo(() => {
     return initialFiles.reduce((acc, f) => acc + f.sizeBytes, 0)
@@ -64,7 +71,8 @@ export function useCardQueue({
     }
   }, [history, initialFiles.length, initialTotalBytes])
 
-  const isCompleted = initialFiles.length > 0 && queue.length === 0
+  // Completed only when we had files, the queue is now exhausted, and we actually reviewed items
+  const isCompleted = initialFiles.length > 0 && queue.length === 0 && history.length > 0
 
   // 1. Keep File
   const handleKeep = useCallback((fileToKeep?: FileItem) => {
@@ -139,9 +147,9 @@ export function useCardQueue({
         return [lastAction.file, ...filtered]
       })
     } else if (lastAction.action === 'delete') {
-      // File was moved to trash in OS; we return it to the queue list and notify user
+      // File was moved to trash in OS; return it to review queue
       setQueue(prev => [lastAction.file, ...prev])
-      setErrorMessage(`Note: '${lastAction.file.name}' was in the OS Trash. It has been restored to your review list.`)
+      setErrorMessage(`Note: '${lastAction.file.name}' was moved to Trash. Restored to your review queue.`)
     }
 
     onUndoSound?.()

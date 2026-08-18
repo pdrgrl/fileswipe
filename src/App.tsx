@@ -9,7 +9,7 @@ import { CardStack } from './components/CardStack'
 import { SwipeControls } from './components/SwipeControls'
 import { FilterModal } from './components/FilterModal'
 import { CompletionScreen } from './components/CompletionScreen'
-import { AlertCircle, X } from 'lucide-react'
+import { AlertCircle, X, FolderSearch } from 'lucide-react'
 
 const DEFAULT_FILTER_OPTIONS: ScanFilterOptions = {
   recursive: true,
@@ -25,6 +25,7 @@ export function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [filterOptions, setFilterOptions] = useState<ScanFilterOptions>(DEFAULT_FILTER_OPTIONS)
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [emptyFolderNotice, setEmptyFolderNotice] = useState<string | null>(null)
 
   const {
     soundEnabled,
@@ -69,12 +70,18 @@ export function App() {
     }
 
     setIsScanning(true)
+    setEmptyFolderNotice(null)
     try {
       const result = await window.api.scanDirectory(path, options)
-      setFolderPath(path)
+      setFolderPath(result.folderPath || path)
       setScannedFiles(result.files)
+
+      if (result.files.length === 0) {
+        setEmptyFolderNotice(`No files found in this folder matching your current filter settings.`)
+      }
     } catch (err) {
       console.error('Scan error:', err)
+      setEmptyFolderNotice(`Failed to scan folder: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setIsScanning(false)
     }
@@ -136,6 +143,7 @@ export function App() {
         onChangeFolder={() => {
           setFolderPath(null)
           setScannedFiles([])
+          setEmptyFolderNotice(null)
         }}
         onResetScan={handleResetScan}
       />
@@ -153,12 +161,20 @@ export function App() {
 
       {/* Main Content Stage */}
       <main className="flex-1 flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden relative">
-        {/* State 1: No Folder Loaded */}
-        {!folderPath || scannedFiles.length === 0 ? (
-          <FolderDropzone
-            onFolderSelected={handleFolderSelected}
-            isScanning={isScanning}
-          />
+        {/* State 1: No Folder Selected or Empty Directory Result */}
+        {!folderPath || (scannedFiles.length === 0 && !isScanning) ? (
+          <div className="flex-1 flex flex-col items-center justify-center w-full">
+            {emptyFolderNotice && (
+              <div className="mb-4 px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs max-w-md text-center flex items-center gap-2.5 shadow-lg shadow-amber-500/10">
+                <FolderSearch className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{emptyFolderNotice}</span>
+              </div>
+            )}
+            <FolderDropzone
+              onFolderSelected={handleFolderSelected}
+              isScanning={isScanning}
+            />
+          </div>
         ) : isCompleted ? (
           /* State 2: Session Completed / Victory */
           <CompletionScreen
@@ -169,6 +185,7 @@ export function App() {
             onPickNewFolder={() => {
               setFolderPath(null)
               setScannedFiles([])
+              setEmptyFolderNotice(null)
             }}
             onRevealFile={handleReveal}
           />
