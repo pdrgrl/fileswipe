@@ -14,6 +14,110 @@ interface CardStackProps {
   onReveal?: (filePath: string) => void
 }
 
+function ActiveCard({
+  file,
+  onKeep,
+  onDelete,
+  onSkip,
+  onReveal
+}: {
+  file: FileItem
+  onKeep: (file: FileItem) => void
+  onDelete: (file: FileItem) => void
+  onSkip: (file: FileItem) => void
+  onReveal?: (filePath: string) => void
+}) {
+  const [exitDirection, setExitDirection] = useState<'left' | 'right' | 'down' | null>(null)
+  
+  // Independent motion values per active card
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+
+  // Dynamic transforms based on local drag
+  const rotate = useTransform(x, [-300, 0, 300], [-18, 0, 18])
+  const keepOpacity = useTransform(x, [30, 110], [0, 1])
+  const deleteOpacity = useTransform(x, [-30, -110], [0, 1])
+  const skipOpacity = useTransform(y, [30, 90], [0, 1])
+
+  const handleDragEnd = (_: unknown, info: { offset: { x: number; y: number }; velocity: { x: number; y: number } }) => {
+    const { offset, velocity } = info
+    const swipeXThreshold = 85
+    const swipeYThreshold = 75
+    const velocityThreshold = 250
+
+    if (offset.x > swipeXThreshold || velocity.x > velocityThreshold) {
+      setExitDirection('right')
+      onKeep(file)
+    } else if (offset.x < -swipeXThreshold || velocity.x < -velocityThreshold) {
+      setExitDirection('left')
+      onDelete(file)
+    } else if (offset.y > swipeYThreshold || velocity.y > velocityThreshold) {
+      setExitDirection('down')
+      onSkip(file)
+    }
+  }
+
+  return (
+    <motion.div
+      key={file.id}
+      style={{
+        x,
+        y,
+        rotate,
+        zIndex: 30
+      }}
+      drag
+      dragSnapToOrigin={true}
+      dragElastic={0.65}
+      onDragEnd={handleDragEnd}
+      initial={{ scale: 0.95, opacity: 0, y: 15 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      exit={{
+        x: exitDirection === 'left' ? -650 : exitDirection === 'right' ? 650 : 0,
+        y: exitDirection === 'down' ? 550 : 0,
+        opacity: 0,
+        rotate: exitDirection === 'left' ? -25 : exitDirection === 'right' ? 25 : 0,
+        transition: { duration: 0.22, ease: 'easeOut' }
+      }}
+      className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none select-none"
+    >
+      {/* Dynamic Stamp Badges */}
+      {/* KEEP STAMP */}
+      <motion.div
+        style={{ opacity: keepOpacity }}
+        className="stamp-badge absolute top-8 left-8 border-emerald-500 text-emerald-400 bg-emerald-950/80 -rotate-12 flex items-center gap-2"
+      >
+        <Check className="w-6 h-6 stroke-[3]" />
+        <span>KEEP</span>
+      </motion.div>
+
+      {/* DELETE STAMP */}
+      <motion.div
+        style={{ opacity: deleteOpacity }}
+        className="stamp-badge absolute top-8 right-8 border-rose-500 text-rose-400 bg-rose-950/80 rotate-12 flex items-center gap-2"
+      >
+        <Trash2 className="w-6 h-6 stroke-[3]" />
+        <span>DELETE</span>
+      </motion.div>
+
+      {/* SKIP STAMP */}
+      <motion.div
+        style={{ opacity: skipOpacity }}
+        className="stamp-badge absolute bottom-28 inset-x-0 mx-auto w-fit border-amber-500 text-amber-400 bg-amber-950/80 flex items-center gap-2"
+      >
+        <Clock className="w-6 h-6 stroke-[3]" />
+        <span>SKIP</span>
+      </motion.div>
+
+      <SwipeCard
+        file={file}
+        isFront={true}
+        onReveal={onReveal}
+      />
+    </motion.div>
+  )
+}
+
 export function CardStack({
   activeFile,
   nextFile,
@@ -23,35 +127,6 @@ export function CardStack({
   onSkip,
   onReveal
 }: CardStackProps) {
-  const [exitDirection, setExitDirection] = useState<'left' | 'right' | 'down' | null>(null)
-
-  // Motion values for drag physics
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-
-  // Dynamic transforms based on drag
-  const rotate = useTransform(x, [-300, 0, 300], [-18, 0, 18])
-  const keepOpacity = useTransform(x, [20, 120], [0, 1])
-  const deleteOpacity = useTransform(x, [-20, -120], [0, 1])
-  const skipOpacity = useTransform(y, [20, 100], [0, 1])
-
-  const handleDragEnd = (_: unknown, info: { offset: { x: number; y: number }; velocity: { x: number; y: number } }) => {
-    const { offset, velocity } = info
-    const swipeThreshold = 100
-    const velocityThreshold = 350
-
-    if (offset.x > swipeThreshold || velocity.x > velocityThreshold) {
-      setExitDirection('right')
-      if (activeFile) onKeep(activeFile)
-    } else if (offset.x < -swipeThreshold || velocity.x < -velocityThreshold) {
-      setExitDirection('left')
-      if (activeFile) onDelete(activeFile)
-    } else if (offset.y > swipeThreshold || velocity.y > velocityThreshold) {
-      setExitDirection('down')
-      if (activeFile) onSkip(activeFile)
-    }
-  }
-
   return (
     <div className="relative w-full max-w-[500px] h-[580px] mx-auto flex items-center justify-center">
       {/* 3rd Card in Stack (deepest background) */}
@@ -86,63 +161,14 @@ export function CardStack({
       {/* Top Active Interactive Card */}
       <AnimatePresence mode="popLayout">
         {activeFile && (
-          <motion.div
+          <ActiveCard
             key={activeFile.id}
-            style={{
-              x,
-              y,
-              rotate,
-              zIndex: 30
-            }}
-            drag
-            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-            dragElastic={0.8}
-            onDragEnd={handleDragEnd}
-            initial={{ scale: 0.95, opacity: 0, y: 15 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{
-              x: exitDirection === 'left' ? -600 : exitDirection === 'right' ? 600 : 0,
-              y: exitDirection === 'down' ? 500 : 0,
-              opacity: 0,
-              rotate: exitDirection === 'left' ? -25 : exitDirection === 'right' ? 25 : 0,
-              transition: { duration: 0.22, ease: 'easeOut' }
-            }}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
-          >
-            {/* Dynamic Stamp Badges */}
-            {/* KEEP STAMP */}
-            <motion.div
-              style={{ opacity: keepOpacity }}
-              className="stamp-badge absolute top-8 left-8 border-emerald-500 text-emerald-400 bg-emerald-950/80 -rotate-12 flex items-center gap-2"
-            >
-              <Check className="w-6 h-6 stroke-[3]" />
-              <span>KEEP</span>
-            </motion.div>
-
-            {/* DELETE STAMP */}
-            <motion.div
-              style={{ opacity: deleteOpacity }}
-              className="stamp-badge absolute top-8 right-8 border-rose-500 text-rose-400 bg-rose-950/80 rotate-12 flex items-center gap-2"
-            >
-              <Trash2 className="w-6 h-6 stroke-[3]" />
-              <span>DELETE</span>
-            </motion.div>
-
-            {/* SKIP STAMP */}
-            <motion.div
-              style={{ opacity: skipOpacity }}
-              className="stamp-badge absolute bottom-28 inset-x-0 mx-auto w-fit border-amber-500 text-amber-400 bg-amber-950/80 flex items-center gap-2"
-            >
-              <Clock className="w-6 h-6 stroke-[3]" />
-              <span>SKIP</span>
-            </motion.div>
-
-            <SwipeCard
-              file={activeFile}
-              isFront={true}
-              onReveal={onReveal}
-            />
-          </motion.div>
+            file={activeFile}
+            onKeep={onKeep}
+            onDelete={onDelete}
+            onSkip={onSkip}
+            onReveal={onReveal}
+          />
         )}
       </AnimatePresence>
     </div>
