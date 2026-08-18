@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, protocol, net } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import { pathToFileURL } from 'node:url'
+import { pathToFileURL, fileURLToPath } from 'node:url'
 import { scanDirectory } from './services/scanner'
 import type { ScanFilterOptions } from '../src/types'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Register privileged custom scheme for serving local media
 protocol.registerSchemesAsPrivileged([
