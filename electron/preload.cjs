@@ -39,6 +39,10 @@ contextBridge.exposeInMainWorld('api', {
     console.log('[Preload] api.revealItem called for:', filePath)
     return ipcRenderer.invoke('fs:reveal-item', filePath)
   },
+  openFile: (filePath) => {
+    console.log('[Preload] api.openFile called for:', filePath)
+    return ipcRenderer.invoke('fs:open-file', filePath)
+  },
   readTextSnippet: (filePath) => {
     return ipcRenderer.invoke('fs:read-text-snippet', filePath)
   },

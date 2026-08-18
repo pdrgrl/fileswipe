@@ -20,60 +20,76 @@ export function SwipeControls({
   disabled = false
 }: SwipeControlsProps) {
   return (
-    <div className="flex items-center justify-center gap-4 py-4 select-none">
-      {/* Undo Button */}
-      <button
-        onClick={onUndo}
-        disabled={!canUndo || disabled}
-        className={`p-3.5 rounded-2xl glass-button text-slate-400 hover:text-white transition-all duration-200 flex items-center justify-center ${
-          !canUndo || disabled ? 'opacity-30 cursor-not-allowed' : 'hover:border-slate-400 hover:scale-105 active:scale-95'
-        }`}
-        title="Undo Last Action (Z / Ctrl+Z)"
-      >
-        <Undo2 className="w-5 h-5" />
-      </button>
-
-      {/* Delete / Trash Button (Swipe Left) */}
-      <button
-        onClick={onDelete}
-        disabled={disabled}
-        className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-rose-600/90 to-red-500/90 hover:from-rose-500 hover:to-red-400 text-white flex items-center justify-center shadow-lg shadow-rose-500/25 hover:shadow-glow-delete border border-rose-400/30 transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed group"
-        title="Delete to Trash (← / A)"
-      >
-        <Trash2 className="w-7 h-7 group-hover:rotate-12 transition-transform duration-200" />
-      </button>
-
-      {/* Skip Button (Swipe Down / Send to End) */}
-      <button
-        onClick={onSkip}
-        disabled={disabled}
-        className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600/80 to-yellow-500/80 hover:from-amber-500 hover:to-yellow-400 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 hover:shadow-glow-skip border border-amber-400/30 transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-        title="Skip to End (↓ / S / Space)"
-      >
-        <Clock className="w-6 h-6" />
-      </button>
-
-      {/* Keep Button (Swipe Right) */}
-      <button
-        onClick={onKeep}
-        disabled={disabled}
-        className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-600/90 to-teal-500/90 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 hover:shadow-glow-keep border border-emerald-400/30 transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed group"
-        title="Keep File (→ / D)"
-      >
-        <Check className="w-7 h-7 stroke-[3] group-hover:scale-110 transition-transform duration-200" />
-      </button>
-
-      {/* Reveal in Explorer Button */}
-      {onReveal && (
+    <div className="flex items-center justify-center select-none py-3">
+      {/* Floating Themed Capsule Dock */}
+      <div className="flex items-center gap-3 px-5 py-2 rounded-full themed-dock">
+        {/* 1. Undo Button */}
         <button
-          onClick={onReveal}
-          disabled={disabled}
-          className="p-3.5 rounded-2xl glass-button text-slate-400 hover:text-white transition-all duration-200 flex items-center justify-center hover:border-blue-400 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Open in File Explorer (O)"
+          onClick={onUndo}
+          disabled={!canUndo || disabled}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl themed-button transition-all ${
+            !canUndo || disabled ? 'opacity-25 cursor-not-allowed' : ''
+          }`}
+          title="Undo Last Action (Z)"
         >
-          <FolderOpen className="w-5 h-5" />
+          <Undo2 className="w-4 h-4" />
+          <span className="kbd-keycap">Z</span>
         </button>
-      )}
+
+        <div className="w-[1px] h-5 bg-[var(--border-app)]" />
+
+        {/* 2. Delete / Trash Button (Swipe Left) */}
+        <button
+          onClick={onDelete}
+          disabled={disabled}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 hover:border-rose-500/50 shadow-sm shadow-rose-500/10 transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group"
+          title="Trash File (← / A)"
+        >
+          <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-bold tracking-tight">Trash</span>
+          <span className="kbd-keycap text-rose-300 border-rose-500/30 bg-rose-950/40">A</span>
+        </button>
+
+        {/* 3. Skip Button (Swipe Down) */}
+        <button
+          onClick={onSkip}
+          disabled={disabled}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 border border-amber-500/25 hover:border-amber-500/50 shadow-sm shadow-amber-500/10 transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group"
+          title="Skip File (↓ / S / Space)"
+        >
+          <Clock className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-bold tracking-tight">Skip</span>
+          <span className="kbd-keycap text-amber-300 border-amber-500/30 bg-amber-950/40">S</span>
+        </button>
+
+        {/* 4. Keep Button (Swipe Right) */}
+        <button
+          onClick={onKeep}
+          disabled={disabled}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/25 hover:border-emerald-500/50 shadow-sm shadow-emerald-500/10 transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group"
+          title="Keep File (→ / D)"
+        >
+          <Check className="w-4 h-4 stroke-[3] group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-bold tracking-tight">Keep</span>
+          <span className="kbd-keycap text-emerald-300 border-emerald-500/30 bg-emerald-950/40">D</span>
+        </button>
+
+        {/* 5. Reveal in Explorer Button */}
+        {onReveal && (
+          <>
+            <div className="w-[1px] h-5 bg-[var(--border-app)]" />
+            <button
+              onClick={onReveal}
+              disabled={disabled}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl themed-button transition-all disabled:opacity-25 disabled:cursor-not-allowed"
+              title="Reveal in File Explorer (O)"
+            >
+              <FolderOpen className="w-4 h-4 text-sky-400" />
+              <span className="kbd-keycap">O</span>
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

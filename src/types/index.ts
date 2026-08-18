@@ -86,6 +86,7 @@ export interface WindowAPI {
   restoreFile: (filePath: string, fileId?: string) => Promise<{ success: boolean; error?: string }>
   purgeTrash: () => Promise<void>
   revealItem: (filePath: string) => Promise<void>
+  openFile: (filePath: string) => Promise<string>
   readTextSnippet: (filePath: string) => Promise<string | null>
   inspectArchive: (filePath: string) => Promise<ArchiveInspectionResult>
   getFileProtocolUrl: (filePath: string) => string

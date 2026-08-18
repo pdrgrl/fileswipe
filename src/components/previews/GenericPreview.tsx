@@ -22,41 +22,41 @@ export function GenericPreview({ file }: GenericPreviewProps) {
 
   const getCategoryColor = () => {
     switch (file.category) {
-      case 'archive': return 'from-amber-500/10 to-amber-500/5 border-amber-500/20 text-amber-300'
-      case 'document': return 'from-rose-500/10 to-rose-500/5 border-rose-500/20 text-rose-300'
-      case 'code': return 'from-cyan-500/10 to-cyan-500/5 border-cyan-500/20 text-cyan-300'
-      default: return 'from-indigo-500/10 to-indigo-500/5 border-indigo-500/20 text-indigo-300'
+      case 'archive': return 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+      case 'document': return 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+      case 'code': return 'bg-cyan-500/10 border-cyan-500/25 text-cyan-400'
+      default: return 'bg-indigo-500/10 border-indigo-500/25 text-indigo-400'
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-8 bg-gradient-to-b from-surface to-surface-elevated">
+    <div className="flex flex-col items-center justify-center w-full h-full p-8 bg-[var(--bg-card)] text-[var(--text-main)] select-none">
       {/* Icon Card */}
-      <div className={`w-28 h-28 rounded-2xl bg-gradient-to-b border flex items-center justify-center mb-6 shadow-xl ${getCategoryColor()}`}>
+      <div className={`w-28 h-28 rounded-2xl border flex items-center justify-center mb-5 shadow-xl ${getCategoryColor()}`}>
         {getIcon()}
       </div>
 
       {/* Extension Badge */}
-      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold uppercase tracking-widest text-slate-300 mb-6">
-        <Tag className="w-3 h-3 text-slate-400" />
+      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--button-bg)] border border-[var(--border-app)] text-xs font-semibold uppercase tracking-widest text-[var(--text-main)] mb-6">
+        <Tag className="w-3 h-3 text-[var(--text-subtle)]" />
         {file.extension ? `.${file.extension}` : 'Unknown'}
       </div>
 
       {/* Metadata Grid */}
       <div className="w-full max-w-sm grid grid-cols-2 gap-3">
-        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
-          <HardDrive className="w-4 h-4 text-slate-400" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-app)] flex items-center gap-3">
+          <HardDrive className="w-4 h-4 text-sky-400" />
           <div className="overflow-hidden">
-            <span className="text-[10px] text-slate-500 block uppercase font-medium">Size</span>
-            <span className="text-xs font-semibold text-slate-200">{formatBytes(file.sizeBytes)}</span>
+            <span className="text-[10px] text-[var(--text-subtle)] block uppercase font-medium">Size</span>
+            <span className="text-xs font-semibold text-[var(--text-main)]">{formatBytes(file.sizeBytes)}</span>
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
-          <Clock className="w-4 h-4 text-slate-400" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-app)] flex items-center gap-3">
+          <Clock className="w-4 h-4 text-amber-400" />
           <div className="overflow-hidden">
-            <span className="text-[10px] text-slate-500 block uppercase font-medium">Modified</span>
-            <span className="text-xs font-semibold text-slate-200 truncate">{formatDate(file.modifiedAt)}</span>
+            <span className="text-[10px] text-[var(--text-subtle)] block uppercase font-medium">Modified</span>
+            <span className="text-xs font-semibold text-[var(--text-main)] truncate">{formatDate(file.modifiedAt)}</span>
           </div>
         </div>
       </div>

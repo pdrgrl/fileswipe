@@ -3,6 +3,7 @@ import type { FileItem, ScanFilterOptions } from './types'
 import { useSoundEffects } from './hooks/useSoundEffects'
 import { useCardQueue } from './hooks/useCardQueue'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { useTheme } from './hooks/useTheme'
 import { TopNav } from './components/TopNav'
 import { FolderDropzone } from './components/FolderDropzone'
 import { CardStack } from './components/CardStack'
@@ -38,7 +39,7 @@ export function App() {
   } = useSoundEffects()
 
   const {
-    queue,
+    queueRemaining,
     history,
     activeFile,
     nextFile,
@@ -130,14 +131,18 @@ export function App() {
     return parts[parts.length - 1] || fullPath
   }
 
+  const { theme, cycleTheme } = useTheme()
+
   return (
-    <div className="flex flex-col h-screen w-screen bg-background text-slate-100 overflow-hidden select-none font-sans">
+    <div className="flex flex-col h-screen w-screen bg-[var(--bg-app)] text-[var(--text-main)] overflow-hidden select-none font-sans">
       {/* Top Header Bar */}
       <TopNav
         folderName={getFolderName(folderPath)}
         stats={stats}
-        queueRemaining={queue.length}
+        queueRemaining={queueRemaining}
         soundEnabled={soundEnabled}
+        currentTheme={theme}
+        onCycleTheme={cycleTheme}
         onToggleSound={toggleSound}
         onOpenFilter={() => setIsFilterModalOpen(true)}
         onChangeFolder={() => {

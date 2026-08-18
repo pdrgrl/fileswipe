@@ -52,13 +52,7 @@ function createWindow() {
     height: 840,
     minWidth: 800,
     minHeight: 650,
-    frame: true,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#090b10',
-      symbolColor: '#94a3b8',
-      height: 56
-    },
+    frame: false,
     backgroundColor: '#090b10',
     webPreferences: {
       preload: preloadPath,
@@ -76,7 +70,6 @@ function createWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     console.log('[Main Process] Loading dev server URL:', process.env.VITE_DEV_SERVER_URL)
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     console.log('[Main Process] Loading production index.html')
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
@@ -287,6 +280,23 @@ ipcMain.handle('fs:purge-trash', async () => {
 ipcMain.handle('fs:reveal-item', async (_event, filePath: string) => {
   console.log('[Main IPC] fs:reveal-item called for:', filePath)
   shell.showItemInFolder(filePath)
+})
+
+// 7. Open File Directly in Default Application (VLC, Media Player, etc.)
+ipcMain.handle('fs:open-file', async (_event, filePath: string) => {
+  console.log('[Main IPC] fs:open-file called for:', filePath)
+  try {
+    const errorMsg = await shell.openPath(filePath)
+    if (errorMsg) {
+      console.warn(`[Main IPC] shell.openPath returned error: "${errorMsg}", attempting openExternal...`)
+      await shell.openExternal(pathToFileURL(filePath).toString())
+    }
+    return { success: true }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[Main IPC] Failed to open file:', filePath, msg)
+    return { success: false, error: msg }
+  }
 })
 
 // 7. Read Text Snippet for Code / Text previews

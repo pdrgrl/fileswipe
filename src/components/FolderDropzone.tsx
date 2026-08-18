@@ -35,7 +35,6 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
   }
 
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log('[FolderDropzone] handleFileInputChange triggered')
     if (e.target.files && e.target.files.length > 0) {
       const firstFile = e.target.files[0]
       let detectedPath = ''
@@ -45,7 +44,6 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
       if (!detectedPath) {
         detectedPath = (firstFile as unknown as { path?: string }).path || ''
       }
-      console.log('[FolderDropzone] detectedPath from input:', detectedPath)
 
       if (detectedPath) {
         const normalized = detectedPath.replace(/\\/g, '/')
@@ -71,7 +69,6 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
     e.preventDefault()
     e.stopPropagation()
     setIsDragOver(false)
-    console.log('[FolderDropzone] handleDrop triggered. files count:', e.dataTransfer.files?.length)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
@@ -83,7 +80,6 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
       if (!droppedPath) {
         droppedPath = (file as unknown as { path?: string }).path || ''
       }
-      console.log('[FolderDropzone] droppedPath resolved:', droppedPath)
 
       if (droppedPath) {
         onFolderSelected(droppedPath)
@@ -107,45 +103,45 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
 
       {/* Brand Hero */}
       <div className="text-center mb-8 flex flex-col items-center">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-rose-500 via-amber-500 to-emerald-400 p-0.5 shadow-2xl shadow-rose-500/20 mb-4 animate-bounce">
-          <div className="w-full h-full bg-[#0d111a] rounded-[22px] flex items-center justify-center">
-            <Flame className="w-8 h-8 text-rose-500 fill-rose-500" />
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 via-amber-500 to-emerald-400 p-[1.5px] shadow-2xl shadow-rose-500/20 mb-3">
+          <div className="w-full h-full bg-[var(--bg-surface)] rounded-[14px] flex items-center justify-center">
+            <Flame className="w-7 h-7 text-amber-400 fill-amber-400" />
           </div>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
           FileSwipe
         </h1>
-        <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-md">
-          Declutter your hard drive in seconds. Swipe right to <span className="text-emerald-400 font-semibold">Keep</span>, swipe left to <span className="text-rose-400 font-semibold">Delete</span>, and down to <span className="text-amber-400 font-semibold">Skip</span>.
+        <p className="text-[var(--text-muted)] text-xs sm:text-sm mt-1.5 max-w-md font-medium leading-relaxed">
+          The fastest way to declutter folders. Swipe right to <span className="text-emerald-500 font-semibold">Keep</span>, left to <span className="text-rose-500 font-semibold">Trash</span>, and down to <span className="text-amber-500 font-semibold">Skip</span>.
         </p>
       </div>
 
-      {/* Main Drag-and-Drop Box */}
+      {/* Main Drag-and-Drop Box (Command Dropzone) */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handlePickFolder}
-        className={`w-full max-w-xl p-10 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center backdrop-blur-xl ${
+        className={`w-full max-w-xl p-9 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center relative overflow-hidden group ${
           isDragOver
-            ? 'border-blue-400 bg-blue-500/10 scale-102 shadow-2xl shadow-blue-500/20'
-            : 'border-white/15 bg-surface/60 hover:border-white/30 hover:bg-surface/80 shadow-glass'
+            ? 'border-sky-400/80 bg-sky-500/[0.08] shadow-2xl shadow-sky-500/20 scale-[1.01]'
+            : 'border-[var(--border-app)] bg-[var(--bg-card)] hover:border-[var(--border-highlight)] shadow-[var(--card-shadow)]'
         } ${isScanning ? 'opacity-50 pointer-events-none cursor-wait' : ''}`}
       >
-        <div className="w-20 h-20 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5 text-blue-400">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--button-bg)] border border-[var(--border-app)] flex items-center justify-center mb-4 text-sky-400 group-hover:scale-105 transition-transform">
           {isScanning ? (
-            <Sparkles className="w-10 h-10 animate-spin text-amber-400" />
+            <Sparkles className="w-7 h-7 animate-spin text-amber-400" />
           ) : (
-            <FolderUp className="w-10 h-10 group-hover:scale-110 transition-transform" />
+            <FolderUp className="w-7 h-7" />
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-slate-100">
-          {isScanning ? 'Scanning Directory...' : isDragOver ? 'Drop Folder Here!' : 'Select or Drop a Folder'}
+        <h3 className="text-base font-bold text-[var(--text-main)] tracking-tight">
+          {isScanning ? 'Scanning Directory...' : isDragOver ? 'Drop Folder Here!' : 'Choose Folder to Clean'}
         </h3>
-        <p className="text-xs text-slate-400 mt-1 max-w-xs">
-          {isScanning ? 'Indexing files and calculating storage...' : 'Drag any folder from your desktop or file manager to start sweeping'}
+        <p className="text-xs text-[var(--text-muted)] mt-1 max-w-xs font-normal">
+          {isScanning ? 'Indexing files and computing storage...' : 'Drop any folder or click to open native picker'}
         </p>
 
         <button
@@ -155,30 +151,31 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
             e.stopPropagation()
             handlePickFolder()
           }}
-          className="mt-6 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2"
+          className="mt-5 px-5 py-2 rounded-xl themed-button text-[var(--text-main)] font-semibold text-xs transition-all duration-150 active:scale-95 flex items-center gap-2"
         >
-          <FolderUp className="w-4 h-4" />
-          <span>Browse Folder</span>
+          <FolderUp className="w-3.5 h-3.5 text-sky-400" />
+          <span>Select Folder</span>
+          <span className="kbd-keycap ml-1">⌘ O</span>
         </button>
       </div>
 
-      {/* Feature Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-xl mt-8">
-        <div className="p-3 rounded-2xl glass-panel border-white/5 flex items-center gap-2.5">
-          <Image className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-xs text-slate-300 font-medium truncate">Photos & Media</span>
+      {/* Feature Badges */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-xl mt-6">
+        <div className="p-2.5 rounded-xl themed-panel flex items-center gap-2">
+          <Image className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="text-xs text-[var(--text-main)] font-medium truncate">Images & GIFs</span>
         </div>
-        <div className="p-3 rounded-2xl glass-panel border-white/5 flex items-center gap-2.5">
-          <Film className="w-4 h-4 text-blue-400 shrink-0" />
-          <span className="text-xs text-slate-300 font-medium truncate">Videos & Audio</span>
+        <div className="p-2.5 rounded-xl themed-panel flex items-center gap-2">
+          <Film className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <span className="text-xs text-[var(--text-main)] font-medium truncate">Videos & Audio</span>
         </div>
-        <div className="p-3 rounded-2xl glass-panel border-white/5 flex items-center gap-2.5">
-          <Code className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span className="text-xs text-slate-300 font-medium truncate">Code & Docs</span>
+        <div className="p-2.5 rounded-xl themed-panel flex items-center gap-2">
+          <Code className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span className="text-xs text-[var(--text-main)] font-medium truncate">Code & PDFs</span>
         </div>
-        <div className="p-3 rounded-2xl glass-panel border-white/5 flex items-center gap-2.5">
-          <HardDrive className="w-4 h-4 text-rose-400 shrink-0" />
-          <span className="text-xs text-slate-300 font-medium truncate">Safe Trash</span>
+        <div className="p-2.5 rounded-xl themed-panel flex items-center gap-2">
+          <HardDrive className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+          <span className="text-xs text-[var(--text-main)] font-medium truncate">Safe Undo</span>
         </div>
       </div>
     </div>

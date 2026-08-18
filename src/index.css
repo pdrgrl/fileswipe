@@ -2,86 +2,191 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+/* -------------------------------------------------------------
+   THEME DEFINITIONS: Dark (Slate), Light (Porcelain), AMOLED (OLED Black)
+---------------------------------------------------------------- */
+
+/* 1. Modern Dark / Slate Theme (Default) */
+:root, .theme-dark {
+  --bg-app: #0c101a;
+  --bg-app-rgb: 12, 16, 26;
+  --bg-radial: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 60%);
+  --bg-surface: #151b2b;
+  --bg-surface-elevated: #1e263c;
+  --bg-card: #141a29;
+  --bg-dock: rgba(21, 27, 43, 0.85);
+  --border-app: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-highlight: rgba(255, 255, 255, 0.16);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.08) inset, 0 20px 48px -12px rgba(0, 0, 0, 0.7);
+  --dock-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.1) inset, 0 16px 32px -8px rgba(0, 0, 0, 0.7);
+  --button-bg: rgba(255, 255, 255, 0.04);
+  --button-hover: rgba(255, 255, 255, 0.09);
+  --keycap-bg: rgba(255, 255, 255, 0.07);
+  --keycap-border: rgba(255, 255, 255, 0.12);
+  --keycap-text: #94a3b8;
 }
 
+/* 2. Crisp Light Theme (Clean Warm Minimalist) */
+.theme-light {
+  --bg-app: #f1f5f9;
+  --bg-app-rgb: 241, 245, 249;
+  --bg-radial: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-dock: rgba(255, 255, 255, 0.92);
+  --border-app: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-highlight: rgba(0, 0, 0, 0.14);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-subtle: #94a3b8;
+  --card-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.07);
+  --dock-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --button-bg: rgba(0, 0, 0, 0.04);
+  --button-hover: rgba(0, 0, 0, 0.08);
+  --keycap-bg: rgba(0, 0, 0, 0.05);
+  --keycap-border: rgba(0, 0, 0, 0.12);
+  --keycap-text: #475569;
+}
+
+/* 3. AMOLED Pitch Black Theme (Pure OLED) */
+.theme-amoled {
+  --bg-app: #000000;
+  --bg-app-rgb: 0, 0, 0;
+  --bg-radial: none;
+  --bg-surface: #0a0a0a;
+  --bg-surface-elevated: #141414;
+  --bg-card: #0a0a0a;
+  --bg-dock: rgba(12, 12, 12, 0.94);
+  --border-app: #222222;
+  --border-subtle: #161616;
+  --border-highlight: #333333;
+  --text-main: #ffffff;
+  --text-muted: #a3a3a3;
+  --text-subtle: #525252;
+  --card-shadow: 0 0 0 1px #222222, 0 24px 50px -12px rgba(0, 0, 0, 1);
+  --dock-shadow: 0 0 0 1px #282828, 0 16px 36px -8px rgba(0, 0, 0, 0.9);
+  --button-bg: #141414;
+  --button-hover: #222222;
+  --keycap-bg: #1c1c1c;
+  --keycap-border: #333333;
+  --keycap-text: #a3a3a3;
+}
+
+/* Global Body Styles */
 body {
   margin: 0;
   padding: 0;
-  background-color: #090b10;
-  color: #f1f5f9;
+  background-color: var(--bg-app);
+  background-image: var(--bg-radial);
+  color: var(--text-main);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
+  letter-spacing: -0.01em;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(17, 21, 32, 0.5);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a344d;
-  border-radius: 4px;
+  background: var(--border-highlight);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b4868;
+  background: var(--text-muted);
 }
 
-/* Glassmorphic utilities */
-.glass-panel {
-  background: rgba(17, 21, 32, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-panel-elevated {
-  background: rgba(24, 30, 46, 0.85);
+/* Reusable Theme Utilities */
+.themed-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-app);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--card-shadow);
 }
 
-.glass-button {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.themed-card-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-app);
+  box-shadow: var(--card-shadow);
 }
 
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+.themed-dock {
+  background: var(--bg-dock);
+  border: 1px solid var(--border-app);
+  box-shadow: var(--dock-shadow);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.themed-button {
+  background: var(--button-bg);
+  border: 1px solid var(--border-app);
+  color: var(--text-muted);
+  backdrop-filter: blur(12px);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.themed-button:hover {
+  background: var(--button-hover);
+  border-color: var(--border-highlight);
+  color: var(--text-main);
   transform: translateY(-1px);
 }
 
-.glass-button:active {
+.themed-button:active {
   transform: translateY(1px);
 }
 
-/* Tinder stamp badges */
-.stamp-badge {
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  border-width: 4px;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1.25rem;
-  pointer-events: none;
-  z-index: 50;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+/* Keyboard keycap badge */
+.kbd-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--keycap-text);
+  background: var(--keycap-bg);
+  border: 1px solid var(--keycap-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2);
 }
 
-/* Draggable electron region */
+/* Laser Tinder Stamp Badges */
+.stamp-badge {
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-width: 3px;
+  border-radius: 0.85rem;
+  padding: 0.6rem 1.4rem;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+/* Electron Draggable Regions */
 .drag-region {
   -webkit-app-region: drag;
 }

@@ -30,7 +30,7 @@ export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
 
     // 3. Image Preview
     if (file.category === 'image') {
-      return <ImagePreview file={file} />
+      return <ImagePreview file={file} isFront={isFront} />
     }
 
     // 4. Video & Audio Preview
@@ -55,30 +55,30 @@ export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
     if (ext === 'pdf') return <FileText className="w-3.5 h-3.5 text-rose-400" />
     switch (file.category) {
       case 'image': return <Image className="w-3.5 h-3.5 text-emerald-400" />
-      case 'video': return <Film className="w-3.5 h-3.5 text-blue-400" />
+      case 'video': return <Film className="w-3.5 h-3.5 text-sky-400" />
       case 'audio': return <Music className="w-3.5 h-3.5 text-purple-400" />
       case 'code': return <Code className="w-3.5 h-3.5 text-cyan-400" />
       case 'archive': return <Archive className="w-3.5 h-3.5 text-amber-400" />
-      default: return <FileText className="w-3.5 h-3.5 text-slate-400" />
+      default: return <FileText className="w-3.5 h-3.5 text-[var(--text-muted)]" />
     }
   }
 
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden glass-panel-elevated flex flex-col shadow-2xl border border-white/10 relative select-none">
+    <div className="w-full h-full rounded-2xl overflow-hidden themed-card-panel flex flex-col relative select-none">
       {/* Media / Content Preview Section */}
       <div className="relative flex-1 w-full overflow-hidden bg-black/40">
         {renderPreview()}
       </div>
 
       {/* Card Info & Meta Footer */}
-      <div className="p-5 bg-surface/95 border-t border-white/[0.07] flex flex-col gap-3 backdrop-blur-xl shrink-0">
+      <div className="p-4 bg-[var(--bg-surface)] border-t border-[var(--border-app)] flex flex-col gap-2.5 backdrop-blur-xl shrink-0">
         {/* Top line: Name & Open Folder Button */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-bold text-slate-100 truncate tracking-tight" title={file.name}>
+            <h3 className="text-sm font-bold text-[var(--text-main)] truncate tracking-tight" title={file.name}>
               {file.name}
             </h3>
-            <p className="text-xs text-slate-400 truncate font-mono mt-0.5" title={file.path}>
+            <p className="text-[11px] text-[var(--text-muted)] truncate font-mono mt-0.5" title={file.path}>
               {truncatePath(file.relativePath || file.name)}
             </p>
           </div>
@@ -89,30 +89,30 @@ export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
                 e.stopPropagation()
                 onReveal(file.path)
               }}
-              className="p-2 rounded-xl glass-button text-slate-300 hover:text-white shrink-0 hover:border-blue-500/40"
+              className="p-1.5 rounded-lg themed-button shrink-0"
               title="Reveal in File Explorer (O)"
             >
-              <FolderOpen className="w-4 h-4" />
+              <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
             </button>
           )}
         </div>
 
         {/* Bottom line: Category, Size, Modified Date badges */}
-        <div className="flex items-center justify-between text-xs pt-1 border-t border-white/[0.04]">
+        <div className="flex items-center justify-between text-xs pt-1 border-t border-[var(--border-subtle)]">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08] font-medium text-slate-300 capitalize">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[var(--button-bg)] border border-[var(--border-app)] font-medium text-[11px] text-[var(--text-main)] capitalize">
               {getCategoryIcon()}
               {ext === 'pdf' ? 'PDF Doc' : file.category}
             </span>
 
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08] font-semibold text-slate-200">
-              <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--button-bg)] border border-[var(--border-app)] font-semibold text-[11px] text-[var(--text-main)]">
+              <HardDrive className="w-3 h-3 text-sky-400" />
               {formatBytes(file.sizeBytes)}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] font-medium">
+            <Calendar className="w-3 h-3 text-[var(--text-subtle)]" />
             <span>{formatTimeAgo(file.modifiedAt)}</span>
           </div>
         </div>
