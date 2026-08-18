@@ -24,9 +24,16 @@ contextBridge.exposeInMainWorld('api', {
     console.log('[Preload] api.scanDirectory called with folderPath:', folderPath)
     return ipcRenderer.invoke('fs:scan-directory', folderPath, options)
   },
-  trashFile: (filePath) => {
-    console.log('[Preload] api.trashFile called for:', filePath)
-    return ipcRenderer.invoke('fs:trash-file', filePath)
+  trashFile: (filePath, fileId) => {
+    console.log('[Preload] api.trashFile called for:', filePath, fileId)
+    return ipcRenderer.invoke('fs:trash-file', filePath, fileId)
+  },
+  restoreFile: (filePath, fileId) => {
+    console.log('[Preload] api.restoreFile called for:', filePath, fileId)
+    return ipcRenderer.invoke('fs:restore-file', filePath, fileId)
+  },
+  purgeTrash: () => {
+    return ipcRenderer.invoke('fs:purge-trash')
   },
   revealItem: (filePath) => {
     console.log('[Preload] api.revealItem called for:', filePath)

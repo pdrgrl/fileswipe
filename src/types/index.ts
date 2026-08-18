@@ -67,7 +67,9 @@ export interface WindowAPI {
   selectFolder: () => Promise<string | null>
   getPathForFile: (file: File) => string
   scanDirectory: (folderPath: string, options: Partial<ScanFilterOptions>) => Promise<ScanResult>
-  trashFile: (filePath: string) => Promise<{ success: boolean; error?: string }>
+  trashFile: (filePath: string, fileId?: string) => Promise<{ success: boolean; error?: string }>
+  restoreFile: (filePath: string, fileId?: string) => Promise<{ success: boolean; error?: string }>
+  purgeTrash: () => Promise<void>
   revealItem: (filePath: string) => Promise<void>
   readTextSnippet: (filePath: string) => Promise<string | null>
   getFileProtocolUrl: (filePath: string) => string

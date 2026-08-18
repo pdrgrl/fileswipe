@@ -102,14 +102,14 @@ export function useCardQueue({
     onSkipSound?.()
   }, [queue, onSkipSound])
 
-  // 3. Delete File (safe trash)
+  // 3. Delete File (safe staging + physical undo buffer)
   const handleDelete = useCallback(async (fileToDelete?: FileItem) => {
     const target = fileToDelete || queue[0]
     if (!target) return
 
     try {
-      if (window.api && window.api.trashFile) {
-        const result = await window.api.trashFile(target.path)
+      if (window.api && typeof window.api.trashFile === 'function') {
+        const result = await window.api.trashFile(target.path, target.id)
         if (!result.success) {
           setErrorMessage(`Could not trash file: ${result.error || 'Permission denied or file in use'}`)
           return
@@ -129,8 +129,8 @@ export function useCardQueue({
     }
   }, [queue, onDeleteSound, onCompleteSound])
 
-  // 4. Undo last action
-  const handleUndo = useCallback(() => {
+  // 4. Undo last action (with real file restoration on disk)
+  const handleUndo = useCallback(async () => {
     if (history.length === 0) return
 
     const lastAction = history[history.length - 1]
@@ -147,9 +147,14 @@ export function useCardQueue({
         return [lastAction.file, ...filtered]
       })
     } else if (lastAction.action === 'delete') {
-      // File was moved to trash in OS; return it to review queue
+      // Physically restore file on disk from staging buffer
+      if (window.api && typeof window.api.restoreFile === 'function') {
+        const result = await window.api.restoreFile(lastAction.file.path, lastAction.file.id)
+        if (!result.success) {
+          setErrorMessage(`Could not restore file on disk: ${result.error || 'Unknown error'}`)
+        }
+      }
       setQueue(prev => [lastAction.file, ...prev])
-      setErrorMessage(`Note: '${lastAction.file.name}' was moved to Trash. Restored to your review queue.`)
     }
 
     onUndoSound?.()
