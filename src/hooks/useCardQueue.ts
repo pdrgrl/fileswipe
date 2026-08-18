@@ -1,0 +1,171 @@
+import { useState, useCallback, useMemo } from 'react'
+import type { FileItem, ActionHistoryItem, StorageStats } from '../types'
+
+interface UseCardQueueProps {
+  initialFiles: FileItem[]
+  folderPath: string
+  onKeepSound?: () => void
+  onDeleteSound?: () => void
+  onSkipSound?: () => void
+  onUndoSound?: () => void
+  onCompleteSound?: () => void
+}
+
+export function useCardQueue({
+  initialFiles,
+  folderPath,
+  onKeepSound,
+  onDeleteSound,
+  onSkipSound,
+  onUndoSound,
+  onCompleteSound
+}: UseCardQueueProps) {
+  const [queue, setQueue] = useState<FileItem[]>(initialFiles)
+  const [history, setHistory] = useState<ActionHistoryItem[]>([])
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const initialTotalBytes = useMemo(() => {
+    return initialFiles.reduce((acc, f) => acc + f.sizeBytes, 0)
+  }, [initialFiles])
+
+  // Active top file and next card in stack
+  const activeFile = queue[0] || null
+  const nextFile = queue[1] || null
+  const thirdFile = queue[2] || null
+
+  // Compute live statistics
+  const stats: StorageStats = useMemo(() => {
+    let reclaimedBytes = 0
+    let keptBytes = 0
+    let deletedCount = 0
+    let keptCount = 0
+    let skippedCount = 0
+
+    history.forEach(item => {
+      if (item.action === 'delete') {
+        reclaimedBytes += item.file.sizeBytes
+        deletedCount++
+      } else if (item.action === 'keep') {
+        keptBytes += item.file.sizeBytes
+        keptCount++
+      } else if (item.action === 'skip') {
+        skippedCount++
+      }
+    })
+
+    return {
+      initialTotalBytes,
+      reclaimedBytes,
+      keptBytes,
+      deletedCount,
+      keptCount,
+      skippedCount,
+      totalFiles: initialFiles.length
+    }
+  }, [history, initialFiles.length, initialTotalBytes])
+
+  const isCompleted = initialFiles.length > 0 && queue.length === 0
+
+  // 1. Keep File
+  const handleKeep = useCallback((fileToKeep?: FileItem) => {
+    const target = fileToKeep || queue[0]
+    if (!target) return
+
+    setQueue(prev => prev.slice(1))
+    setHistory(prev => [...prev, { file: target, action: 'keep', timestamp: Date.now() }])
+    onKeepSound?.()
+
+    if (queue.length === 1) {
+      onCompleteSound?.()
+    }
+  }, [queue, onKeepSound, onCompleteSound])
+
+  // 2. Skip File (send to end of queue)
+  const handleSkip = useCallback((fileToSkip?: FileItem) => {
+    const target = fileToSkip || queue[0]
+    if (!target) return
+
+    setQueue(prev => {
+      if (prev.length <= 1) return prev // only 1 left, can't skip to back
+      const rest = prev.slice(1)
+      return [...rest, target]
+    })
+    setHistory(prev => [...prev, { file: target, action: 'skip', timestamp: Date.now() }])
+    onSkipSound?.()
+  }, [queue, onSkipSound])
+
+  // 3. Delete File (safe trash)
+  const handleDelete = useCallback(async (fileToDelete?: FileItem) => {
+    const target = fileToDelete || queue[0]
+    if (!target) return
+
+    try {
+      if (window.api && window.api.trashFile) {
+        const result = await window.api.trashFile(target.path)
+        if (!result.success) {
+          setErrorMessage(`Could not trash file: ${result.error || 'Permission denied or file in use'}`)
+          return
+        }
+      }
+
+      setQueue(prev => prev.slice(1))
+      setHistory(prev => [...prev, { file: target, action: 'delete', timestamp: Date.now() }])
+      onDeleteSound?.()
+
+      if (queue.length === 1) {
+        onCompleteSound?.()
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setErrorMessage(`Error trashing file: ${msg}`)
+    }
+  }, [queue, onDeleteSound, onCompleteSound])
+
+  // 4. Undo last action
+  const handleUndo = useCallback(() => {
+    if (history.length === 0) return
+
+    const lastAction = history[history.length - 1]
+    const updatedHistory = history.slice(0, -1)
+    setHistory(updatedHistory)
+
+    if (lastAction.action === 'keep') {
+      // Put file back to top of queue
+      setQueue(prev => [lastAction.file, ...prev])
+    } else if (lastAction.action === 'skip') {
+      // Find the file at the end of queue and move it back to top
+      setQueue(prev => {
+        const filtered = prev.filter(f => f.id !== lastAction.file.id)
+        return [lastAction.file, ...filtered]
+      })
+    } else if (lastAction.action === 'delete') {
+      // File was moved to trash in OS; we return it to the queue list and notify user
+      setQueue(prev => [lastAction.file, ...prev])
+      setErrorMessage(`Note: '${lastAction.file.name}' was in the OS Trash. It has been restored to your review list.`)
+    }
+
+    onUndoSound?.()
+  }, [history, onUndoSound])
+
+  const clearError = useCallback(() => {
+    setErrorMessage(null)
+  }, [])
+
+  return {
+    queue,
+    history,
+    activeFile,
+    nextFile,
+    thirdFile,
+    stats,
+    isCompleted,
+    folderPath,
+    errorMessage,
+    clearError,
+    handleKeep,
+    handleSkip,
+    handleDelete,
+    handleUndo,
+    canUndo: history.length > 0
+  }
+}
