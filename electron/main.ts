@@ -8,11 +8,23 @@ import type { ScanFilterOptions } from '../src/types'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-console.log('[Main Process] Starting FileSwipe...')
-const preloadCjs = path.join(__dirname, 'preload.cjs')
-const preloadJs = path.join(__dirname, 'preload.js')
-const preloadPath = fsSync.existsSync(preloadCjs) ? preloadCjs : preloadJs
-console.log('[Main Process] Preload script selected:', preloadPath, 'exists:', fsSync.existsSync(preloadPath))
+function resolvePreload(): string {
+  const candidates = [
+    path.join(__dirname, 'preload.cjs'),
+    path.join(process.cwd(), 'electron/preload.cjs'),
+    path.join(__dirname, 'preload.js'),
+    path.join(process.cwd(), 'dist-electron/preload.cjs')
+  ]
+  for (const c of candidates) {
+    if (fsSync.existsSync(c)) {
+      console.log('[Main Process] Resolved preload path:', c)
+      return c
+    }
+  }
+  console.warn('[Main Process] Preload candidate fallback:', candidates[0])
+  return candidates[0]
+}
+const preloadPath = resolvePreload()
 
 // Register privileged custom scheme for serving local media
 protocol.registerSchemesAsPrivileged([
