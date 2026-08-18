@@ -16,13 +16,16 @@
     "appId": "com.pedrogrilo.fileswipe",
     "productName": "FileSwipe",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "build/icon.png"
     ],
     "win": {
+      "icon": "build/icon.png",
       "target": [
         {
           "target": "nsis",
@@ -46,6 +49,7 @@
       "shortcutName": "FileSwipe"
     },
     "mac": {
+      "icon": "build/icon.png",
       "target": [
         "dmg",
         "zip"

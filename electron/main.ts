@@ -53,6 +53,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 650,
     frame: false,
+    icon: path.join(__dirname, '../build/icon.png'),
     backgroundColor: '#090b10',
     webPreferences: {
       preload: preloadPath,

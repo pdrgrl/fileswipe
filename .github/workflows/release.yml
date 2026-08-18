@@ -1,0 +1,41 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Typecheck & Build
+        run: |
+          npm run typecheck
+          npx vite build
+
+      - name: Package & Publish GitHub Release
+        uses: electron-userland/electron-builder-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release: true
