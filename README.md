@@ -1,12 +1,16 @@
-# FileSwipe 🔥
+<div align="center">
+  <img src="public/icon.png" width="128" height="128" alt="FileSwipe Logo" style="border-radius: 28px;" />
+  <h1>FileSwipe 🔥</h1>
+  <p><strong>Tinder for Files</strong> — Fast, fluid, and gamified cross-platform file cleanup and decluttering for Windows, macOS, and Linux.</p>
 
-> **Tinder for Files** — Fast, fluid, and gamified cross-platform file cleanup and decluttering for Windows, macOS, and Linux.
-
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/)
-[![Built with Electron](https://img.shields.io/badge/built%20with-Electron%2034-47848F.svg)](https://www.electronjs.org/)
-[![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%203-38B2AC.svg)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  <p>
+    <a href="https://github.com/pdrgrl/fileswipe"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg" alt="Platform" /></a>
+    <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/built%20with-Electron%2034-47848F.svg" alt="Electron" /></a>
+    <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB.svg" alt="React 19" /></a>
+    <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-CSS%203-38B2AC.svg" alt="Tailwind CSS" /></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" /></a>
+  </p>
+</div>
 
 ---
 
