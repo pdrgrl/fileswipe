@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, ExternalLink, HardDrive } from 'lucide-react'
+import { FileText, ExternalLink, HardDrive, Eye } from 'lucide-react'
 import type { FileItem } from '../../types'
 import { formatBytes } from '../../utils/formatters'
 
@@ -44,7 +44,7 @@ export function PdfPreview({ file, onReveal }: PdfPreviewProps) {
       <div className="flex-1 w-full h-full relative overflow-hidden bg-[#1e2333]">
         {!loadFailed ? (
           <iframe
-            src={`${fileUrl}#toolbar=0&navpanes=0`}
+            src={fileUrl}
             title={file.name}
             onError={() => setLoadFailed(true)}
             className="w-full h-full border-0 pointer-events-auto"
@@ -60,6 +60,15 @@ export function PdfPreview({ file, onReveal }: PdfPreviewProps) {
               <HardDrive className="w-3.5 h-3.5 text-rose-400" />
               <span>{formatBytes(file.sizeBytes)}</span>
             </div>
+            {onReveal && (
+              <button
+                onClick={() => onReveal(file.path)}
+                className="mt-4 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Open in PDF App</span>
+              </button>
+            )}
           </div>
         )}
       </div>

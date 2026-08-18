@@ -65,6 +65,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      plugins: true,
       webSecurity: true
     }
   })
@@ -90,17 +91,22 @@ function createWindow() {
 function registerMediaProtocol() {
   protocol.handle('media-file', (request) => {
     try {
-      let decodedUrl = decodeURIComponent(request.url.replace(/^media-file:\/\/(local\/)?/, ''))
+      const parsedUrl = new URL(request.url)
+      // Extract pathname cleanly without hash fragments or query parameters
+      let decodedPath = decodeURIComponent(parsedUrl.pathname)
       
+      // If path starts with /local/, strip it
+      decodedPath = decodedPath.replace(/^\/local\//, '/')
+
       if (process.platform === 'win32') {
-        if (decodedUrl.match(/^\/?[a-zA-Z]:/)) {
-          decodedUrl = decodedUrl.replace(/^\//, '')
-        } else if (decodedUrl.match(/^[a-zA-Z]\//)) {
-          decodedUrl = `${decodedUrl[0]}:/${decodedUrl.substring(2)}`
+        if (decodedPath.match(/^\/?[a-zA-Z]:/)) {
+          decodedPath = decodedPath.replace(/^\//, '')
+        } else if (decodedPath.match(/^[a-zA-Z]\//)) {
+          decodedPath = `${decodedPath[0]}:/${decodedPath.substring(2)}`
         }
       }
 
-      const fileUrl = pathToFileURL(decodedUrl).toString()
+      const fileUrl = pathToFileURL(decodedPath).toString()
       return net.fetch(fileUrl)
     } catch (err) {
       console.error('[Media Protocol] Failed to handle media request for:', request.url, err)
