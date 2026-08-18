@@ -1,9 +1,19 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { ScanFilterOptions, ScanResult } from '../src/types'
 
 contextBridge.exposeInMainWorld('api', {
   selectFolder: (): Promise<string | null> => {
     return ipcRenderer.invoke('dialog:select-folder')
+  },
+  getPathForFile: (file: File): string => {
+    try {
+      if (webUtils && typeof webUtils.getPathForFile === 'function') {
+        return webUtils.getPathForFile(file)
+      }
+    } catch (err) {
+      console.warn('webUtils.getPathForFile failed:', err)
+    }
+    return (file as unknown as { path?: string }).path || ''
   },
   scanDirectory: (folderPath: string, options: Partial<ScanFilterOptions>): Promise<ScanResult> => {
     return ipcRenderer.invoke('fs:scan-directory', folderPath, options)

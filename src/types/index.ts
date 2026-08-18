@@ -65,6 +65,7 @@ export interface StorageStats {
 
 export interface WindowAPI {
   selectFolder: () => Promise<string | null>
+  getPathForFile: (file: File) => string
   scanDirectory: (folderPath: string, options: Partial<ScanFilterOptions>) => Promise<ScanResult>
   trashFile: (filePath: string) => Promise<{ success: boolean; error?: string }>
   revealItem: (filePath: string) => Promise<void>
