@@ -22,13 +22,29 @@ Decluttering thousands of downloads, screenshots, recordings, and stale project 
 
 ## ✨ Features
 
-### 🃏 Tinder-Style Card Physics & Gestures
+### 🎨 3-Way Adaptive Theming Engine
+- ☀️ **Light Mode**: Crisp, high-contrast porcelain background (`#f1f5f9`) with pure white card surfaces and dark charcoal typography.
+- 🌙 **Dark Mode (Default)**: Modern deep slate/zinc (`#0c101a`) with elevated surfaces and balanced contrast.
+- 🌑 **AMOLED / Night Mode**: Pure OLED pitch black (`#000000`) with obsidian card panels and razor hairline borders.
+- *Includes seamless `localStorage` persistence and one-click cycle toggle.*
+
+### 🪟 Frameless Design with Integrated Window Controls
+- Clean borderless window chrome with native custom **Minimize (`—`)**, **Maximize / Restore (`▢`)**, and **Close (`✕`)** buttons integrated directly into the top navigation bar.
+- Native drag regions allow effortless moving of the window across all desktop environments.
+
+### 🃏 Fluid Card Physics & Gestures
 - Fluid drag gestures with velocity-based releases, rotational physics, dynamic stamp badges (`KEEP`, `DELETE`, `SKIP`), and stacked background card depth powered by **Framer Motion**.
-- Automatic center reset (`dragSnapToOrigin`) if a drag is released below threshold.
+- Automatic center reset (`dragSnapToOrigin`) if a drag is released below the swipe threshold.
 
 ### 👁️ Universal Multi-Format Preview Engine
-- 🖼️ **Images & Animated GIFs**: High-resolution hardware-accelerated preview (JPG, PNG, GIF, WebP, SVG, AVIF, BMP, ICO).
-- 🎬 **Video & Audio**: Built-in video player and audio visualizer with inline controls and waveform playback (MP4, WebM, MOV, MKV, MP3, WAV, FLAC, M4A, OGG).
+- 🖼️ **Images & Animated GIFs**:
+  - Asynchronous background GPU decoding (`decoding="async"`) and lazy background loading for massive **8K / 60MB+ images** with zero frame drops.
+  - Interactive **150% Detail Zoom Inspector** button to examine fine details before keeping or deleting.
+  - Supports JPG, PNG, GIF, WebP, SVG, AVIF, BMP, ICO, TIFF.
+- 🎬 **Video & Audio**:
+  - Built-in video player and audio visualizer with inline controls and waveform playback.
+  - **MKV / High-Bitrate Codec Detection**: Automatically detects video codecs unsupported by web engines (e.g. MKV with HEVC/DTS) and provides a one-click **▶ Play in Video Player** launcher into your default system media player (e.g. **VLC**, **MPV**, Windows Media Player).
+  - Supports MP4, WebM, MOV, MKV, AVI, WMV, MP3, WAV, FLAC, M4A, OGG.
 - 📄 **PDF Documents**: Native Chromium PDF document viewer with external reader launch support.
 - 📦 **ZIP & Archive Catalog Inspector**:
   - Live inspection of internal archive entries with folder trees and individual file byte sizes.
@@ -45,17 +61,16 @@ Decluttering thousands of downloads, screenshots, recordings, and stale project 
   - Monospaced line numbers, line and character counters, language badge, and a one-click **Copy Snippet** button.
   - Supports JS, TS, Python, HTML, CSS, JSON (pretty-printed), YAML, SQL, C/C++, Rust, Go, Shell, Logs, and text.
 
+### ⚡ $O(1)$ Ultra-Scale Performance Engine
+- Engineered and benchmarked on **100,000+ files (340+ GB)** with constant-time ($O(1)$) pointer-based queue swiping.
+- Zero garbage collection pauses or array copying latency.
+- Real-time disk storage calculation and live progress tracking.
+- Configurable recursion depth, minimum file sizes (`> 10MB`, `> 100MB`), categories, and sorting filters.
+
 ### 🛡️ Physical Disk Undo & Safe Recycle Bin Staging
 - **Instant Physical Undo (`Ctrl+Z` / `Z`)**: Files are staged in a drive-local buffer. Undoing instantly moves the file physically back to its exact folder and file path on disk in milliseconds.
 - **Cross-Device EXDEV Protection**: Automatically handles multi-drive partitions (e.g. `C:`, `Y:`, external SSDs, USB drives) and network shares with atomic renames and fallback safety.
 - **Flushed to OS Recycle Bin**: When quitting the app or completing a review session, all remaining staged files are safely sent to the native OS Recycle Bin (`shell.trashItem()`).
-
-### ⚡ High-Performance Scanning Engine
-- Asynchronous non-blocking directory scanner optimized to traverse **100,000+ files (340+ GB)** in seconds.
-- Filter by file category (Images, Videos, Audio, Code, Docs, Archives).
-- Filter by minimum file size (`> 10MB`, `> 100MB`, etc.).
-- Sort by Largest first, Oldest first, Newest first, or Default.
-- Configurable recursion depth and hidden files toggle.
 
 ### 🔊 Procedural Web Audio FX & Celebrations
 - Synthesized Web Audio API sound effects for Keep, Delete, Skip, Undo, and Victory (toggleable with `M`).
@@ -87,7 +102,7 @@ Decluttering thousands of downloads, screenshots, recordings, and stale project 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/fileswipe.git
+git clone https://github.com/pdrgrl/fileswipe.git
 cd fileswipe
 ```
 
@@ -120,7 +135,7 @@ The compiled binaries will be output into the `dist/` and `release/` directories
 
 - **Desktop Framework**: Electron 34
 - **UI & Components**: React 19, TypeScript
-- **Styling**: Tailwind CSS 3, Modern Glassmorphism
+- **Styling**: Tailwind CSS 3, Modern Glassmorphism & Custom Themes
 - **Motion & Gestures**: Framer Motion 12
 - **Archive Engine**: JSZip
 - **Iconography**: Lucide React
