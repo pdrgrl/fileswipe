@@ -63,6 +63,21 @@ export interface StorageStats {
   totalFiles: number
 }
 
+export interface ArchiveEntry {
+  name: string
+  sizeBytes: number
+  isDir: boolean
+}
+
+export interface ArchiveInspectionResult {
+  entries: ArchiveEntry[]
+  totalFiles: number
+  totalDirs: number
+  uncompressedBytes: number
+  isSupported: boolean
+  error?: string
+}
+
 export interface WindowAPI {
   selectFolder: () => Promise<string | null>
   getPathForFile: (file: File) => string
@@ -72,6 +87,7 @@ export interface WindowAPI {
   purgeTrash: () => Promise<void>
   revealItem: (filePath: string) => Promise<void>
   readTextSnippet: (filePath: string) => Promise<string | null>
+  inspectArchive: (filePath: string) => Promise<ArchiveInspectionResult>
   getFileProtocolUrl: (filePath: string) => string
   minimizeWindow: () => void
   maximizeWindow: () => void

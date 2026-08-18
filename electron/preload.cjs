@@ -42,6 +42,10 @@ contextBridge.exposeInMainWorld('api', {
   readTextSnippet: (filePath) => {
     return ipcRenderer.invoke('fs:read-text-snippet', filePath)
   },
+  inspectArchive: (filePath) => {
+    console.log('[Preload] api.inspectArchive called for:', filePath)
+    return ipcRenderer.invoke('fs:inspect-archive', filePath)
+  },
   getFileProtocolUrl: (filePath) => {
     const normalized = (filePath || '').replace(/\\/g, '/')
     const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`

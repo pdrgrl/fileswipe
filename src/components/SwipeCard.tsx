@@ -4,6 +4,8 @@ import { formatBytes, formatTimeAgo, truncatePath } from '../utils/formatters'
 import { ImagePreview } from './previews/ImagePreview'
 import { MediaPreview } from './previews/MediaPreview'
 import { CodePreview } from './previews/CodePreview'
+import { PdfPreview } from './previews/PdfPreview'
+import { ArchivePreview } from './previews/ArchivePreview'
 import { GenericPreview } from './previews/GenericPreview'
 
 interface SwipeCardProps {
@@ -13,26 +15,44 @@ interface SwipeCardProps {
 }
 
 export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
+  const ext = file.extension.toLowerCase()
+
   const renderPreview = () => {
-    switch (file.category) {
-      case 'image':
-        return <ImagePreview file={file} />
-      case 'video':
-      case 'audio':
-        return <MediaPreview file={file} />
-      case 'code':
-        return <CodePreview file={file} />
-      case 'document':
-        if (file.textSnippet) {
-          return <CodePreview file={file} />
-        }
-        return <GenericPreview file={file} />
-      default:
-        return <GenericPreview file={file} />
+    // 1. PDF Document Preview
+    if (ext === 'pdf') {
+      return <PdfPreview file={file} onReveal={onReveal} />
     }
+
+    // 2. Archive Container Preview (.zip, .rar, .7z, .tar, .gz)
+    if (file.category === 'archive' || ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'iso'].includes(ext)) {
+      return <ArchivePreview file={file} />
+    }
+
+    // 3. Image Preview
+    if (file.category === 'image') {
+      return <ImagePreview file={file} />
+    }
+
+    // 4. Video & Audio Preview
+    if (file.category === 'video' || file.category === 'audio') {
+      return <MediaPreview file={file} />
+    }
+
+    // 5. Code, Markdown, CSV, JSON, Text, Logs
+    if (
+      file.category === 'code' ||
+      file.category === 'document' ||
+      ['txt', 'log', 'csv', 'tsv', 'md', 'mdx', 'json', 'yaml', 'yml', 'xml', 'ini', 'conf', 'cfg'].includes(ext)
+    ) {
+      return <CodePreview file={file} />
+    }
+
+    // 6. Generic Binary / Fallback Preview
+    return <GenericPreview file={file} />
   }
 
   const getCategoryIcon = () => {
+    if (ext === 'pdf') return <FileText className="w-3.5 h-3.5 text-rose-400" />
     switch (file.category) {
       case 'image': return <Image className="w-3.5 h-3.5 text-emerald-400" />
       case 'video': return <Film className="w-3.5 h-3.5 text-blue-400" />
@@ -51,7 +71,7 @@ export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
       </div>
 
       {/* Card Info & Meta Footer */}
-      <div className="p-5 bg-surface/95 border-t border-white/[0.07] flex flex-col gap-3 backdrop-blur-xl">
+      <div className="p-5 bg-surface/95 border-t border-white/[0.07] flex flex-col gap-3 backdrop-blur-xl shrink-0">
         {/* Top line: Name & Open Folder Button */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -82,7 +102,7 @@ export function SwipeCard({ file, isFront = false, onReveal }: SwipeCardProps) {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08] font-medium text-slate-300 capitalize">
               {getCategoryIcon()}
-              {file.category}
+              {ext === 'pdf' ? 'PDF Doc' : file.category}
             </span>
 
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.05] border border-white/[0.08] font-semibold text-slate-200">

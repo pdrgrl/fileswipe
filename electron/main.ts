@@ -4,6 +4,7 @@ import fsSync from 'node:fs'
 import fs from 'node:fs/promises'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { scanDirectory } from './services/scanner'
+import { inspectArchive } from './services/archiveInspector'
 import type { ScanFilterOptions } from '../src/types'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -285,7 +286,7 @@ ipcMain.handle('fs:reveal-item', async (_event, filePath: string) => {
 // 7. Read Text Snippet for Code / Text previews
 ipcMain.handle('fs:read-text-snippet', async (_event, filePath: string) => {
   try {
-    const buffer = Buffer.alloc(10 * 1024) // up to 10KB
+    const buffer = Buffer.alloc(15 * 1024) // up to 15KB
     const handle = await fs.open(filePath, 'r')
     const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0)
     await handle.close()
@@ -294,6 +295,12 @@ ipcMain.handle('fs:read-text-snippet', async (_event, filePath: string) => {
     console.error(`[Main IPC] Failed to read text snippet from ${filePath}:`, err)
     return null
   }
+})
+
+// 8. Inspect Archive (.zip contents)
+ipcMain.handle('fs:inspect-archive', async (_event, filePath: string) => {
+  console.log('[Main IPC] fs:inspect-archive called for:', filePath)
+  return await inspectArchive(filePath)
 })
 
 // 8. Window Controls
