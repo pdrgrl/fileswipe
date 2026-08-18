@@ -17,7 +17,9 @@ const IGNORED_FOLDERS = new Set([
   'dist-electron',
   'build',
   'out',
-  'tmp'
+  'tmp',
+  '.fileswipe_staging',
+  '.fileswipe_trash'
 ])
 
 export async function scanDirectory(

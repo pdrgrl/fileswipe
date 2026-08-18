@@ -125,10 +125,43 @@ app.on('window-all-closed', () => {
   }
 })
 
-// Safe Staging for Instant Undo & OS Trash Management
-const stagingDir = path.join(app.getPath('temp'), 'fileswipe_staging')
-if (!fsSync.existsSync(stagingDir)) {
-  fsSync.mkdirSync(stagingDir, { recursive: true })
+// Safe Cross-Device Staging Helper
+async function safeMoveFile(src: string, dest: string) {
+  const destDir = path.dirname(dest)
+  if (!fsSync.existsSync(destDir)) {
+    await fs.mkdir(destDir, { recursive: true })
+  }
+
+  try {
+    // Try fast atomic rename first
+    await fs.rename(src, dest)
+  } catch (err: unknown) {
+    // Fallback for cross-device links (EXDEV)
+    if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'EXDEV') {
+      console.log(`[Main] Cross-device move detected for ${src} -> ${dest}, using copy+unlink fallback`)
+      await fs.copyFile(src, dest)
+      await fs.unlink(src)
+    } else {
+      throw err
+    }
+  }
+}
+
+function getStagingDirForFile(filePath: string): string {
+  try {
+    const root = path.parse(filePath).root
+    const driveStaging = path.join(root, '.fileswipe_staging')
+    if (!fsSync.existsSync(driveStaging)) {
+      fsSync.mkdirSync(driveStaging, { recursive: true })
+    }
+    return driveStaging
+  } catch {
+    const fallback = path.join(app.getPath('temp'), 'fileswipe_staging')
+    if (!fsSync.existsSync(fallback)) {
+      fsSync.mkdirSync(fallback, { recursive: true })
+    }
+    return fallback
+  }
 }
 
 interface StagedEntry {
@@ -186,17 +219,18 @@ ipcMain.handle('fs:scan-directory', async (_event, folderPath: string, options: 
   return result
 })
 
-// 3. Move File to Safe Staging (Allows instantaneous Undo restoration)
+// 3. Move File to Safe Staging (Allows instantaneous Undo restoration across any drive)
 ipcMain.handle('fs:trash-file', async (_event, filePath: string, fileId?: string) => {
   console.log('[Main IPC] fs:trash-file called for:', filePath)
   try {
     const key = fileId || filePath
     const fileName = path.basename(filePath)
+    const stagingDir = getStagingDirForFile(filePath)
     const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${fileName}`
     const stagedPath = path.join(stagingDir, uniqueName)
 
-    // Move file to staging
-    await fs.rename(filePath, stagedPath)
+    // Safely move file to staging (handles cross-device automatically)
+    await safeMoveFile(filePath, stagedPath)
 
     stagedFiles.set(key, {
       originalPath: filePath,
@@ -224,13 +258,8 @@ ipcMain.handle('fs:restore-file', async (_event, filePath: string, fileId?: stri
       return { success: false, error: 'File was not in staging buffer' }
     }
 
-    const targetDir = path.dirname(entry.originalPath)
-    if (!fsSync.existsSync(targetDir)) {
-      await fs.mkdir(targetDir, { recursive: true })
-    }
-
-    // Move file back from staging to original path
-    await fs.rename(entry.stagedPath, entry.originalPath)
+    // Safely move file back from staging to original path
+    await safeMoveFile(entry.stagedPath, entry.originalPath)
     stagedFiles.delete(key)
 
     console.log('[Main IPC] File successfully restored on disk to:', entry.originalPath)
