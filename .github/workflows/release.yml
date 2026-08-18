@@ -34,8 +34,7 @@ jobs:
           npm run typecheck
           npx vite build
 
-      - name: Package & Publish GitHub Release
-        uses: electron-userland/electron-builder-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          release: true
+      - name: Package & Publish Release Assets
+        run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
