@@ -37,7 +37,8 @@ contextBridge.exposeInMainWorld('api', {
   },
   getFileProtocolUrl: (filePath) => {
     const normalized = (filePath || '').replace(/\\/g, '/')
-    return `media-file://${encodeURI(normalized)}`
+    const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
+    return `media-file://local${encodeURI(cleanPath)}`
   },
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),

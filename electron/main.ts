@@ -88,16 +88,22 @@ function createWindow() {
 function registerMediaProtocol() {
   protocol.handle('media-file', (request) => {
     try {
-      let decodedUrl = decodeURIComponent(request.url.replace(/^media-file:\/\//, ''))
+      // Handles media-file://local/Y:/Pictures/... or media-file://y/Pictures/...
+      let decodedUrl = decodeURIComponent(request.url.replace(/^media-file:\/\/(local\/)?/, ''))
       
-      if (process.platform === 'win32' && decodedUrl.match(/^\/[a-zA-Z]:/)) {
-        decodedUrl = decodedUrl.substring(1)
+      if (process.platform === 'win32') {
+        if (decodedUrl.match(/^\/?[a-zA-Z]:/)) {
+          decodedUrl = decodedUrl.replace(/^\//, '')
+        } else if (decodedUrl.match(/^[a-zA-Z]\//)) {
+          // Reconstruct drive colon if stripped into hostname
+          decodedUrl = `${decodedUrl[0]}:/${decodedUrl.substring(2)}`
+        }
       }
 
       const fileUrl = pathToFileURL(decodedUrl).toString()
       return net.fetch(fileUrl)
     } catch (err) {
-      console.error('Failed to handle media protocol:', err)
+      console.error('[Media Protocol] Failed to handle media request for:', request.url, err)
       return new Response('File not found', { status: 404 })
     }
   })
