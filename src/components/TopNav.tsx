@@ -28,10 +28,10 @@ export function TopNav({
   const progressPercent = total > 0 ? Math.round((reviewedCount / total) * 100) : 0
 
   return (
-    <header className="w-full px-6 py-3.5 glass-panel border-b border-white/[0.08] flex items-center justify-between gap-4 z-40 select-none">
+    <header className="w-full h-14 px-5 glass-panel border-b border-white/[0.08] flex items-center justify-between gap-4 z-40 select-none drag-region pr-36 shrink-0">
       {/* Left: Brand & Current Folder */}
       <div className="flex items-center gap-4 min-w-0">
-        <div className="flex items-center gap-2 font-black text-lg tracking-tight bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+        <div className="flex items-center gap-2 font-black text-lg tracking-tight bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-400 bg-clip-text text-transparent no-drag cursor-default">
           <Flame className="w-6 h-6 text-rose-500 fill-rose-500" />
           <span>FileSwipe</span>
         </div>
@@ -39,7 +39,7 @@ export function TopNav({
         {folderName && (
           <button
             onClick={onChangeFolder}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-button text-xs font-medium text-slate-300 hover:text-white max-w-[200px] truncate group border-blue-500/20 hover:border-blue-500/50"
+            className="no-drag flex items-center gap-2 px-3 py-1.5 rounded-xl glass-button text-xs font-medium text-slate-300 hover:text-white max-w-[200px] truncate group border-blue-500/20 hover:border-blue-500/50"
             title="Click to Switch Folder"
           >
             <Folder className="w-3.5 h-3.5 text-blue-400 shrink-0 group-hover:scale-110 transition-transform" />
@@ -50,7 +50,7 @@ export function TopNav({
 
       {/* Center: Progress Bar & Review Counter */}
       {total > 0 && (
-        <div className="flex-1 max-w-xs flex flex-col items-center gap-1.5">
+        <div className="flex-1 max-w-xs flex flex-col items-center gap-1 no-drag">
           <div className="flex items-center justify-between w-full text-[11px] font-semibold text-slate-400">
             <span>Progress: {progressPercent}%</span>
             <span className="text-slate-300 font-mono">{queueRemaining} left</span>
@@ -65,7 +65,7 @@ export function TopNav({
       )}
 
       {/* Right: Storage Meter & Action Buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 no-drag">
         {/* Reclaimed Space Tag */}
         {stats.reclaimedBytes > 0 && (
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold shadow-sm shadow-rose-500/20 animate-pulse-subtle">
