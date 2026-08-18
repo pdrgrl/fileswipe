@@ -13,25 +13,29 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handlePickFolder = async () => {
+    console.log('[FolderDropzone] handlePickFolder clicked. isScanning:', isScanning)
     if (isScanning) return
 
     if (window.api && typeof window.api.selectFolder === 'function') {
       try {
+        console.log('[FolderDropzone] Calling window.api.selectFolder()...')
         const selected = await window.api.selectFolder()
+        console.log('[FolderDropzone] window.api.selectFolder() returned:', selected)
         if (selected) {
           onFolderSelected(selected)
           return
         }
       } catch (err) {
-        console.error('Error opening folder picker dialog:', err)
+        console.error('[FolderDropzone] Error opening folder picker dialog:', err)
       }
+    } else {
+      console.warn('[FolderDropzone] window.api.selectFolder is not available, falling back to file input')
+      fileInputRef.current?.click()
     }
-
-    // Fallback: trigger hidden HTML5 directory input
-    fileInputRef.current?.click()
   }
 
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    console.log('[FolderDropzone] handleFileInputChange triggered')
     if (e.target.files && e.target.files.length > 0) {
       const firstFile = e.target.files[0]
       let detectedPath = ''
@@ -41,9 +45,9 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
       if (!detectedPath) {
         detectedPath = (firstFile as unknown as { path?: string }).path || ''
       }
+      console.log('[FolderDropzone] detectedPath from input:', detectedPath)
 
       if (detectedPath) {
-        // If it's a file path inside a directory, we can extract the parent directory or use it
         const normalized = detectedPath.replace(/\\/g, '/')
         const parentDir = normalized.substring(0, normalized.lastIndexOf('/'))
         onFolderSelected(parentDir || detectedPath)
@@ -67,6 +71,7 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
     e.preventDefault()
     e.stopPropagation()
     setIsDragOver(false)
+    console.log('[FolderDropzone] handleDrop triggered. files count:', e.dataTransfer.files?.length)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
@@ -78,6 +83,7 @@ export function FolderDropzone({ onFolderSelected, isScanning }: FolderDropzoneP
       if (!droppedPath) {
         droppedPath = (file as unknown as { path?: string }).path || ''
       }
+      console.log('[FolderDropzone] droppedPath resolved:', droppedPath)
 
       if (droppedPath) {
         onFolderSelected(droppedPath)

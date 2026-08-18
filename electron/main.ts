@@ -1,11 +1,18 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, protocol, net } from 'electron'
 import path from 'node:path'
+import fsSync from 'node:fs'
 import fs from 'node:fs/promises'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { scanDirectory } from './services/scanner'
 import type { ScanFilterOptions } from '../src/types'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+console.log('[Main Process] Starting FileSwipe...')
+const preloadCjs = path.join(__dirname, 'preload.cjs')
+const preloadJs = path.join(__dirname, 'preload.js')
+const preloadPath = fsSync.existsSync(preloadCjs) ? preloadCjs : preloadJs
+console.log('[Main Process] Preload script selected:', preloadPath, 'exists:', fsSync.existsSync(preloadPath))
 
 // Register privileged custom scheme for serving local media
 protocol.registerSchemesAsPrivileged([
@@ -39,7 +46,7 @@ function createWindow() {
     },
     backgroundColor: '#090b10',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
@@ -51,8 +58,12 @@ function createWindow() {
   mainWindow.setTitle('FileSwipe - Tinder for Files')
 
   if (process.env.VITE_DEV_SERVER_URL) {
+    console.log('[Main Process] Loading dev server URL:', process.env.VITE_DEV_SERVER_URL)
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+    // Open DevTools in dev mode to facilitate debugging
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
+    console.log('[Main Process] Loading production index.html')
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
@@ -65,10 +76,8 @@ function createWindow() {
 function registerMediaProtocol() {
   protocol.handle('media-file', (request) => {
     try {
-      // url is e.g. media-file://C:/Users/pedro/Pictures/test.png or media-file:///home/user/test.png
       let decodedUrl = decodeURIComponent(request.url.replace(/^media-file:\/\//, ''))
       
-      // On Windows, if path starts with /C:/, strip leading slash
       if (process.platform === 'win32' && decodedUrl.match(/^\/[a-zA-Z]:/)) {
         decodedUrl = decodedUrl.substring(1)
       }
@@ -103,12 +112,17 @@ app.on('window-all-closed', () => {
 
 // 1. Select Folder Dialog
 ipcMain.handle('dialog:select-folder', async () => {
-  if (!mainWindow) return null
+  console.log('[Main IPC] dialog:select-folder called')
+  if (!mainWindow) {
+    console.warn('[Main IPC] mainWindow is null')
+    return null
+  }
   const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory'],
+    properties: ['openDirectory', 'dontAddToRecent'],
     title: 'Select Folder to Sweep'
   })
 
+  console.log('[Main IPC] dialog:select-folder result:', result)
   if (result.canceled || result.filePaths.length === 0) {
     return null
   }
@@ -117,23 +131,29 @@ ipcMain.handle('dialog:select-folder', async () => {
 
 // 2. Scan Directory
 ipcMain.handle('fs:scan-directory', async (_event, folderPath: string, options: Partial<ScanFilterOptions>) => {
-  return await scanDirectory(folderPath, options)
+  console.log('[Main IPC] fs:scan-directory called for:', folderPath, 'options:', options)
+  const result = await scanDirectory(folderPath, options)
+  console.log(`[Main IPC] scanDirectory completed with ${result.files.length} files`)
+  return result
 })
 
 // 3. Move File to OS Trash / Recycle Bin
 ipcMain.handle('fs:trash-file', async (_event, filePath: string) => {
+  console.log('[Main IPC] fs:trash-file called for:', filePath)
   try {
     await shell.trashItem(filePath)
+    console.log('[Main IPC] shell.trashItem succeeded')
     return { success: true }
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    console.error(`Failed to trash file ${filePath}:`, errorMsg)
+    console.error(`[Main IPC] Failed to trash file ${filePath}:`, errorMsg)
     return { success: false, error: errorMsg }
   }
 })
 
 // 4. Reveal in Explorer / Finder
 ipcMain.handle('fs:reveal-item', async (_event, filePath: string) => {
+  console.log('[Main IPC] fs:reveal-item called for:', filePath)
   shell.showItemInFolder(filePath)
 })
 
@@ -146,7 +166,7 @@ ipcMain.handle('fs:read-text-snippet', async (_event, filePath: string) => {
     await handle.close()
     return buffer.toString('utf-8', 0, bytesRead)
   } catch (err) {
-    console.error(`Failed to read text snippet from ${filePath}:`, err)
+    console.error(`[Main IPC] Failed to read text snippet from ${filePath}:`, err)
     return null
   }
 })

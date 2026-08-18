@@ -24,16 +24,17 @@ export async function scanDirectory(
   rawPath: string,
   options: Partial<ScanFilterOptions> = {}
 ): Promise<ScanResult> {
+  console.log('[Scanner] scanDirectory called with rawPath:', rawPath, 'options:', options)
   let rootPath = path.resolve(rawPath)
 
   try {
     const rootStat = await fs.stat(rootPath)
     if (!rootStat.isDirectory()) {
-      // If a file was selected or dropped instead of a directory, sweep its parent folder
+      console.log('[Scanner] Selected path is a file, switching to parent folder:', path.dirname(rootPath))
       rootPath = path.dirname(rootPath)
     }
   } catch (err) {
-    console.error('Failed to stat rootPath:', rootPath, err)
+    console.error('[Scanner] Failed to stat rootPath:', rootPath, err)
   }
 
   const recursive = options.recursive ?? true
@@ -56,19 +57,24 @@ export async function scanDirectory(
     other: 0
   }
 
-  async function traverse(currentDir: string) {
+  let scannedCount = 0
+
+  async function traverse(currentDir: string, depth = 0) {
+    // Prevent runaway recursion beyond depth 10
+    if (depth > 10) return
+
     let entries
     try {
       entries = await fs.readdir(currentDir, { withFileTypes: true })
     } catch (err) {
-      console.warn(`Could not read dir ${currentDir}:`, err)
+      console.warn(`[Scanner] Could not read dir ${currentDir}:`, err)
       return
     }
 
     for (const entry of entries) {
       const fullPath = path.join(currentDir, entry.name)
 
-      // Skip hidden files if not included
+      // Skip hidden files/folders if not included
       if (!includeHidden && entry.name.startsWith('.') && entry.name !== '.') {
         continue
       }
@@ -78,9 +84,10 @@ export async function scanDirectory(
           continue
         }
         if (recursive) {
-          await traverse(fullPath)
+          await traverse(fullPath, depth + 1)
         }
       } else if (entry.isFile()) {
+        scannedCount++
         try {
           const stats = await fs.stat(fullPath)
           const sizeBytes = stats.size
@@ -95,21 +102,6 @@ export async function scanDirectory(
             continue
           }
 
-          let textSnippet: string | undefined = undefined
-          if (category === 'code' || (category === 'document' && ['txt', 'csv', 'tsv', 'md', 'json', 'log'].includes(extension))) {
-            if (sizeBytes < 500 * 1024) { // Only snippet files < 500KB
-              try {
-                const handle = await fs.open(fullPath, 'r')
-                const buffer = Buffer.alloc(Math.min(sizeBytes, 3072))
-                await handle.read(buffer, 0, buffer.length, 0)
-                await handle.close()
-                textSnippet = buffer.toString('utf-8')
-              } catch {
-                // Ignore snippet read error
-              }
-            }
-          }
-
           const relativePath = path.relative(rootPath, fullPath)
           const fileItem: FileItem = {
             id: `${fullPath}_${stats.mtimeMs}`,
@@ -121,21 +113,23 @@ export async function scanDirectory(
             category,
             mimeType,
             modifiedAt: stats.mtimeMs,
-            createdAt: stats.birthtimeMs,
-            textSnippet
+            createdAt: stats.birthtimeMs
           }
 
           files.push(fileItem)
           totalBytes += sizeBytes
           categoryCounts[category] = (categoryCounts[category] || 0) + 1
         } catch (fileErr) {
-          console.warn(`Could not stat file ${fullPath}:`, fileErr)
+          console.warn(`[Scanner] Could not stat file ${fullPath}:`, fileErr)
         }
       }
     }
   }
 
+  const startTime = Date.now()
   await traverse(rootPath)
+  const elapsed = Date.now() - startTime
+  console.log(`[Scanner] Scan finished in ${elapsed}ms: scanned ${scannedCount} entries, matched ${files.length} files (${totalBytes} bytes)`)
 
   // Sort files
   if (sortBy === 'size-desc') {
